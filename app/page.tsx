@@ -11,6 +11,7 @@ import TradeHistory, { Trade } from "@/components/TradeHistory";
 import MarketStats from "@/components/MarketStats";
 import Widgets from "@/components/Widgets";
 import MobileMenu from "@/components/MobileMenu";
+import ThemeToggle from "@/components/ThemeToggle";
 import { Position, calcPortfolioValue } from "@/lib/wallet";
 
 const INITIAL_BALANCE = 50000;
@@ -79,44 +80,50 @@ export default function Home() {
     setPositions((prev) => { const { [symbol]: _, ...rest } = prev; return rest; });
   }
 
-  const pnlColor = totalPnL >= 0 ? "text-[#a8ba41]" : "text-[#e05a3a]";
 
   return (
-    <div className="flex flex-col h-screen bg-[#1a1208] overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden" style={{ background: "var(--bg)" }}>
       {/* ── Header ── */}
-      <header className="flex items-center justify-between px-3 md:px-4 py-2 border-b border-[#3d2e14] bg-[#231a0a] flex-shrink-0">
+      <header className="flex items-center justify-between px-3 md:px-4 py-2 border-b flex-shrink-0"
+        style={{ background: "var(--header-bg)", borderColor: "var(--border)" }}>
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#613910] flex items-center justify-center flex-shrink-0">
-            <span className="text-[#a8ba41] font-black text-xs">LB</span>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: "var(--brown)" }}>
+            <span className="font-black text-xs" style={{ color: "var(--olive)" }}>LB</span>
           </div>
           <div>
-            <div className="text-[#ecedf1] font-black text-xs sm:text-sm tracking-widest leading-tight">LIQUID BOARD</div>
-            <div className="text-[7px] sm:text-[8px] text-[#9a8a6a] tracking-wider hidden sm:block">DECENTRALIZED TRADING TERMINAL</div>
+            <div className="font-black text-xs sm:text-sm tracking-widest leading-tight" style={{ color: "var(--text)" }}>LIQUID BOARD</div>
+            <div className="text-[7px] sm:text-[8px] tracking-wider hidden sm:block" style={{ color: "var(--muted)" }}>DECENTRALIZED TRADING TERMINAL</div>
           </div>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4 text-[9px] sm:text-[10px]">
+        <div className="flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px]">
           <div className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#a8ba41] animate-pulse" />
-            <span className="text-[#9a8a6a] hidden sm:inline">LIVE</span>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--olive)" }} />
+            <span className="hidden sm:inline" style={{ color: "var(--muted)" }}>LIVE</span>
           </div>
-          <div className="text-[#9a8a6a]">
+          <div style={{ color: "var(--muted)" }}>
             <span className="hidden sm:inline">Balance: </span>
-            <span className="text-[#a8ba41] font-mono font-bold">${usdBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="font-mono font-bold" style={{ color: "var(--olive)" }}>
+              ${usdBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
           </div>
-          <div className="text-[#9a8a6a] hidden md:block">
-            P&L: <span className={`font-mono font-bold ${pnlColor}`}>
+          <div className="hidden md:block" style={{ color: "var(--muted)" }}>
+            P&L: <span className="font-mono font-bold" style={{ color: totalPnL >= 0 ? "var(--up)" : "var(--down)" }}>
               {totalPnL >= 0 ? "+" : ""}${totalPnL.toFixed(2)}
             </span>
           </div>
+          {/* Theme toggle */}
+          <ThemeToggle />
           {/* Hamburger — mobile only */}
           <button
             onClick={() => setMenuOpen(true)}
-            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5 rounded-lg border border-[#3d2e14] bg-[#2d2210] hover:border-[#613910] transition-colors"
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5 rounded-lg border transition-colors"
+            style={{ borderColor: "var(--border)", background: "var(--surface2)" }}
             aria-label="Open menu"
           >
-            <span className="w-4 h-0.5 bg-[#a8ba41] rounded-full" />
-            <span className="w-4 h-0.5 bg-[#a8ba41] rounded-full" />
-            <span className="w-2.5 h-0.5 bg-[#a8ba41] rounded-full" />
+            <span className="w-4 h-0.5 rounded-full" style={{ background: "var(--olive)" }} />
+            <span className="w-4 h-0.5 rounded-full" style={{ background: "var(--olive)" }} />
+            <span className="w-2.5 h-0.5 rounded-full" style={{ background: "var(--olive)" }} />
           </button>
         </div>
       </header>
@@ -142,9 +149,9 @@ export default function Home() {
       ══════════════════════════════════════════ */}
       <div className="hidden lg:flex flex-1 min-h-0 overflow-hidden">
         {/* Left: asset list */}
-        <aside className="w-56 border-r border-[#3d2e14] flex flex-col flex-shrink-0 overflow-hidden">
-          <div className="px-2 py-2 border-b border-[#3d2e14]">
-            <div className="text-[9px] text-[#9a8a6a] tracking-wider">MARKETS</div>
+        <aside className="w-56 border-r flex flex-col flex-shrink-0 overflow-hidden" style={{ borderColor: "var(--border)" }}>
+          <div className="px-2 py-2 border-b" style={{ borderColor: "var(--border)" }}>
+            <div className="text-[9px] tracking-wider" style={{ color: "var(--muted)" }}>MARKETS</div>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
             {assets.map((asset) => (
@@ -161,10 +168,10 @@ export default function Home() {
         {/* Center: chart + stats + tabs */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <AssetHeader asset={selectedAsset} price={currentPrice} />
-          <div className="flex-1 min-h-0 p-3 border-b border-[#3d2e14]">
+          <div className="flex-1 min-h-0 p-3 border-b" style={{ borderColor: "var(--border)" }}>
             <Chart symbol={selected} candles={candles[selected] ?? []} currentPrice={currentPrice} />
           </div>
-          <div className="p-3 border-b border-[#3d2e14] flex-shrink-0">
+          <div className="p-3 border-b flex-shrink-0" style={{ borderColor: "var(--border)" }}>
             <MarketStats asset={selectedAsset} price={currentPrice} />
           </div>
           <BottomTabs activeTab={activeTab} setActiveTab={setActiveTab}
@@ -174,7 +181,7 @@ export default function Home() {
         </main>
 
         {/* Right: widgets + order + book */}
-        <aside className="w-64 border-l border-[#3d2e14] flex flex-col flex-shrink-0 overflow-y-auto">
+        <aside className="w-64 border-l flex flex-col flex-shrink-0 overflow-y-auto" style={{ borderColor: "var(--border)" }}>
           <div className="p-3 space-y-3">
             <Widgets usdBalance={usdBalance} positions={positions} prices={prices} totalDeposited={INITIAL_BALANCE} />
             <OrderPanel symbol={selected} price={currentPrice} balance={usdBalance} onOrder={handleOrder} />
@@ -188,9 +195,9 @@ export default function Home() {
       ══════════════════════════════════════════ */}
       <div className="hidden md:flex lg:hidden flex-1 min-h-0 overflow-hidden">
         {/* Left: asset list narrow */}
-        <aside className="w-44 border-r border-[#3d2e14] flex flex-col flex-shrink-0 overflow-hidden">
-          <div className="px-2 py-1.5 border-b border-[#3d2e14]">
-            <div className="text-[9px] text-[#9a8a6a] tracking-wider">MARKETS</div>
+        <aside className="w-44 border-r flex flex-col flex-shrink-0 overflow-hidden" style={{ borderColor: "var(--border)" }}>
+          <div className="px-2 py-1.5 border-b" style={{ borderColor: "var(--border)" }}>
+            <div className="text-[9px] tracking-wider" style={{ color: "var(--muted)" }}>MARKETS</div>
           </div>
           <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
             {assets.map((asset) => (
@@ -208,12 +215,14 @@ export default function Home() {
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <AssetHeader asset={selectedAsset} price={currentPrice} />
           {/* Tab bar */}
-          <div className="flex border-b border-[#3d2e14] flex-shrink-0">
+          <div className="flex border-b flex-shrink-0" style={{ borderColor: "var(--border)" }}>
             {(["chart", "trade", "portfolio"] as const).map((t) => (
               <button key={t} onClick={() => setMobileTab(t as MobileTab)}
-                className={`flex-1 py-2 text-[10px] font-semibold capitalize transition-colors border-b-2 ${
-                  mobileTab === t ? "border-[#a8ba41] text-[#a8ba41]" : "border-transparent text-[#9a8a6a]"
-                }`}
+                className="flex-1 py-2 text-[10px] font-semibold capitalize transition-colors border-b-2"
+                style={{
+                  borderBottomColor: mobileTab === t ? "var(--olive)" : "transparent",
+                  color: mobileTab === t ? "var(--olive)" : "var(--muted)",
+                }}
               >
                 {t}
               </button>
@@ -250,10 +259,11 @@ export default function Home() {
       ══════════════════════════════════════════ */}
       <div className="flex md:hidden flex-1 flex-col min-h-0 overflow-hidden">
         {/* Active tab label bar */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-[#3d2e14] bg-[#231a0a] flex-shrink-0">
-          <span className="text-[10px] text-[#9a8a6a] tracking-wider uppercase">{mobileTab}</span>
+        <div className="flex items-center justify-between px-3 py-2 border-b flex-shrink-0"
+          style={{ background: "var(--header-bg)", borderColor: "var(--border)" }}>
+          <span className="text-[10px] tracking-wider uppercase" style={{ color: "var(--muted)" }}>{mobileTab}</span>
           {mobileTab === "chart" && (
-            <span className="text-xs font-mono font-bold text-[#a8ba41]">
+            <span className="text-xs font-mono font-bold" style={{ color: "var(--olive)" }}>
               {selected}/USD · ${currentPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </span>
           )}
@@ -285,9 +295,10 @@ export default function Home() {
           )}
           {mobileTab === "trade" && (
             <div className="p-3 space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-[#231a0a] border border-[#3d2e14]">
-                <span className="text-xs font-bold text-[#ecedf1]">{selected}/USD</span>
-                <span className="text-sm font-mono font-bold text-[#a8ba41]">
+              <div className="flex items-center justify-between p-3 rounded-xl border"
+                style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+                <span className="text-xs font-bold" style={{ color: "var(--text)" }}>{selected}/USD</span>
+                <span className="text-sm font-mono font-bold" style={{ color: "var(--olive)" }}>
                   ${currentPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -311,15 +322,15 @@ export default function Home() {
 
 function AssetHeader({ asset, price }: { asset: { name: string; symbol: string; change24h: number }; price: number }) {
   return (
-    <div className="px-3 py-2 border-b border-[#3d2e14] flex items-center gap-3 flex-shrink-0 flex-wrap">
+    <div className="px-3 py-2 border-b flex items-center gap-3 flex-shrink-0 flex-wrap" style={{ borderColor: "var(--border)" }}>
       <div>
-        <span className="text-[#ecedf1] font-black text-sm">{asset.name}</span>
-        <span className="text-[#9a8a6a] text-xs ml-2">{asset.symbol}/USD</span>
+        <span className="font-black text-sm" style={{ color: "var(--text)" }}>{asset.name}</span>
+        <span className="text-xs ml-2" style={{ color: "var(--muted)" }}>{asset.symbol}/USD</span>
       </div>
-      <div className="text-lg font-mono font-bold text-[#ecedf1]">
+      <div className="text-lg font-mono font-bold" style={{ color: "var(--text)" }}>
         ${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: price < 1 ? 4 : 2 })}
       </div>
-      <div className={`text-sm font-mono font-semibold ${asset.change24h >= 0 ? "text-[#a8ba41]" : "text-[#e05a3a]"}`}>
+      <div className="text-sm font-mono font-semibold" style={{ color: asset.change24h >= 0 ? "var(--up)" : "var(--down)" }}>
         {asset.change24h >= 0 ? "▲" : "▼"} {Math.abs(asset.change24h)}%
       </div>
     </div>
@@ -338,12 +349,14 @@ function BottomTabs({ activeTab, setActiveTab, positions, prices, trades, onClos
 }) {
   return (
     <div className="flex-shrink-0" style={{ height: 220 }}>
-      <div className="flex border-b border-[#3d2e14]">
+      <div className="flex border-b" style={{ borderColor: "var(--border)" }}>
         {(["positions", "history"] as const).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-xs font-semibold capitalize transition-colors border-b-2 ${
-              activeTab === tab ? "border-[#a8ba41] text-[#a8ba41]" : "border-transparent text-[#9a8a6a] hover:text-[#ecedf1]"
-            }`}
+            className="px-4 py-2 text-xs font-semibold capitalize transition-colors border-b-2"
+            style={{
+              borderBottomColor: activeTab === tab ? "var(--olive)" : "transparent",
+              color: activeTab === tab ? "var(--olive)" : "var(--muted)",
+            }}
           >
             {tab === "positions" ? `Positions (${posCount})` : `History (${tradeCount})`}
           </button>

@@ -61,7 +61,6 @@ function IconPortfolio() {
 const ICONS = { markets: IconMarkets, chart: IconChart, trade: IconTrade, portfolio: IconPortfolio };
 
 export default function MobileMenu({ open, onClose, activeTab, onSelect, balance, pnl, pnlPositive, posCount, tradeCount }: Props) {
-  // lock body scroll when open
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -70,25 +69,28 @@ export default function MobileMenu({ open, onClose, activeTab, onSelect, balance
   return (
     <>
       {/* Backdrop */}
-      <div
-        onClick={onClose}
+      <div onClick={onClose}
         className={`fixed inset-0 z-40 bg-black transition-opacity duration-300 ${open ? "opacity-60" : "opacity-0 pointer-events-none"}`}
       />
 
-      {/* Drawer — slides in from right */}
-      <div className={`fixed top-0 right-0 h-full w-72 z-50 bg-[#1a1208] border-l border-[#3d2e14] flex flex-col transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "translate-x-full"}`}>
-        {/* Drawer header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-[#3d2e14] bg-[#231a0a]">
+      {/* Drawer */}
+      <div className={`fixed top-0 right-0 h-full w-72 z-50 flex flex-col border-l transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "translate-x-full"}`}
+        style={{ background: "var(--drawer-bg)", borderColor: "var(--border)" }}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-4 border-b" style={{ background: "var(--header-bg)", borderColor: "var(--border)" }}>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#613910] flex items-center justify-center">
-              <span className="text-[#a8ba41] font-black text-xs">LB</span>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--brown)" }}>
+              <span className="font-black text-xs" style={{ color: "var(--olive)" }}>LB</span>
             </div>
             <div>
-              <div className="text-[#ecedf1] font-black text-xs tracking-widest">LIQUID BOARD</div>
-              <div className="text-[8px] text-[#9a8a6a]">TRADING TERMINAL</div>
+              <div className="font-black text-xs tracking-widest" style={{ color: "var(--text)" }}>LIQUID BOARD</div>
+              <div className="text-[8px]" style={{ color: "var(--muted)" }}>TRADING TERMINAL</div>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg border border-[#3d2e14] text-[#9a8a6a] hover:text-[#ecedf1] hover:border-[#613910] transition-colors">
+          <button onClick={onClose}
+            className="p-1.5 rounded-lg border transition-colors"
+            style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -96,10 +98,10 @@ export default function MobileMenu({ open, onClose, activeTab, onSelect, balance
         </div>
 
         {/* Wallet summary */}
-        <div className="mx-4 mt-4 p-3 rounded-xl bg-[#231a0a] border border-[#3d2e14]">
-          <div className="text-[9px] text-[#9a8a6a] mb-1 tracking-wider">WALLET</div>
-          <div className="text-base font-mono font-bold text-[#ecedf1]">{balance}</div>
-          <div className={`text-xs font-mono mt-0.5 ${pnlPositive ? "text-[#a8ba41]" : "text-[#e05a3a]"}`}>
+        <div className="mx-4 mt-4 p-3 rounded-xl border" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="text-[9px] mb-1 tracking-wider" style={{ color: "var(--muted)" }}>WALLET</div>
+          <div className="text-base font-mono font-bold" style={{ color: "var(--text)" }}>{balance}</div>
+          <div className="text-xs font-mono mt-0.5" style={{ color: pnlPositive ? "var(--up)" : "var(--down)" }}>
             P&L {pnl}
           </div>
         </div>
@@ -111,29 +113,27 @@ export default function MobileMenu({ open, onClose, activeTab, onSelect, balance
             const isActive = activeTab === item.id;
             const badge = item.id === "portfolio" ? posCount + tradeCount : null;
             return (
-              <button
-                key={item.id}
-                onClick={() => { onSelect(item.id); onClose(); }}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl border transition-all duration-150 text-left ${
-                  isActive
-                    ? "bg-[#a8ba4115] border-[#a8ba41] text-[#a8ba41]"
-                    : "bg-[#231a0a] border-[#3d2e14] text-[#9a8a6a] hover:border-[#613910] hover:text-[#ecedf1]"
-                }`}
+              <button key={item.id} onClick={() => { onSelect(item.id); onClose(); }}
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border transition-all duration-150 text-left"
+                style={{
+                  background: isActive ? "var(--olive-dim)" : "var(--surface)",
+                  borderColor: isActive ? "var(--olive)" : "var(--border)",
+                  color: isActive ? "var(--olive)" : "var(--muted)",
+                }}
               >
-                <span className={`flex-shrink-0 ${isActive ? "text-[#a8ba41]" : "text-[#9a8a6a]"}`}>
-                  <Icon />
-                </span>
+                <span className="flex-shrink-0"><Icon /></span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold leading-tight">{item.label}</div>
-                  <div className="text-[10px] text-[#9a8a6a] mt-0.5">{item.desc}</div>
+                  <div className="text-sm font-semibold leading-tight" style={{ color: isActive ? "var(--olive)" : "var(--text)" }}>{item.label}</div>
+                  <div className="text-[10px] mt-0.5" style={{ color: "var(--muted)" }}>{item.desc}</div>
                 </div>
                 {badge !== null && badge > 0 && (
-                  <span className="flex-shrink-0 text-[9px] font-bold bg-[#613910] text-[#a8ba41] px-1.5 py-0.5 rounded-full">
+                  <span className="flex-shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ background: "var(--brown)", color: "var(--olive)" }}>
                     {badge}
                   </span>
                 )}
                 {isActive && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-[#a8ba41]">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0" style={{ color: "var(--olive)" }}>
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 )}
@@ -143,10 +143,10 @@ export default function MobileMenu({ open, onClose, activeTab, onSelect, balance
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-[#3d2e14]">
+        <div className="px-4 py-3 border-t" style={{ borderColor: "var(--border)" }}>
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#a8ba41] animate-pulse" />
-            <span className="text-[9px] text-[#9a8a6a] tracking-wider">LIVE MARKET DATA</span>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--olive)" }} />
+            <span className="text-[9px] tracking-wider" style={{ color: "var(--muted)" }}>LIVE MARKET DATA</span>
           </div>
         </div>
       </div>

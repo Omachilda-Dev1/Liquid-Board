@@ -19,35 +19,32 @@ export default function OrderBook({ symbol, price }: Props) {
     const isAsk = side === "ask";
     return (
       <div className="relative flex items-center justify-between text-[10px] font-mono py-[2px] px-2 overflow-hidden">
-        <div
-          className="absolute inset-y-0 right-0"
-          style={{
-            width: `${pct}%`,
-            background: isAsk ? "rgba(224,90,58,0.12)" : "rgba(168,186,65,0.12)",
-          }}
-        />
-        <span className={isAsk ? "text-[#e05a3a]" : "text-[#a8ba41]"}>
+        <div className="absolute inset-y-0 right-0" style={{
+          width: `${pct}%`,
+          background: isAsk ? "var(--depth-ask)" : "var(--depth-bid)",
+        }} />
+        <span style={{ color: isAsk ? "var(--down)" : "var(--up)" }}>
           {entry.price.toLocaleString("en-US", { minimumFractionDigits: 2 })}
         </span>
-        <span className="text-[#9a8a6a]">{entry.size.toFixed(4)}</span>
-        <span className="text-[#ecedf180]">{entry.total.toFixed(3)}</span>
+        <span style={{ color: "var(--muted)" }}>{entry.size.toFixed(4)}</span>
+        <span style={{ color: "var(--text)", opacity: 0.6 }}>{entry.total.toFixed(3)}</span>
       </div>
     );
   };
 
   return (
-    <div className="bg-[#231a0a] border border-[#3d2e14] rounded-xl overflow-hidden">
-      <div className="px-3 py-2 border-b border-[#3d2e14] flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#ecedf1]">Order Book</span>
-        <span className="text-[10px] text-[#9a8a6a] font-mono">{symbol}/USD</span>
+    <div className="rounded-xl overflow-hidden border" style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+      <div className="px-3 py-2 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
+        <span className="text-xs font-semibold" style={{ color: "var(--text)" }}>Order Book</span>
+        <span className="text-[10px] font-mono" style={{ color: "var(--muted)" }}>{symbol}/USD</span>
       </div>
-      <div className="px-0 py-1">
-        <div className="flex justify-between text-[9px] text-[#9a8a6a] px-2 pb-1">
+      <div className="py-1">
+        <div className="flex justify-between text-[9px] px-2 pb-1" style={{ color: "var(--muted)" }}>
           <span>Price</span><span>Size</span><span>Total</span>
         </div>
         {book.asks.slice().reverse().map((a, i) => <Row key={`a${i}`} entry={a} side="ask" />)}
-        <div className="flex items-center justify-center py-1.5 border-y border-[#3d2e14] my-1">
-          <span className="font-mono font-bold text-sm text-[#a8ba41]">
+        <div className="flex items-center justify-center py-1.5 border-y my-1" style={{ borderColor: "var(--border)" }}>
+          <span className="font-mono font-bold text-sm" style={{ color: "var(--up)" }}>
             ${price.toLocaleString("en-US", { minimumFractionDigits: 2 })}
           </span>
         </div>

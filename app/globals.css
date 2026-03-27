@@ -2,30 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #1a1208;
-  --surface: #231a0a;
-  --surface2: #2d2210;
-  --border: #3d2e14;
-  --brown: #613910;
-  --brown-light: #7a4a1a;
-  --olive: #a8ba41;
-  --olive-dark: #8a9a32;
-  --olive-dim: #a8ba4122;
-  --light: #ecedf1;
-  --muted: #9a8a6a;
-  --green: #a8ba41;
-  --red: #e05a3a;
+/* ── Dark theme (default) ── */
+[data-theme="dark"], :root {
+  --bg:           #1a1208;
+  --surface:      #231a0a;
+  --surface2:     #2d2210;
+  --border:       #3d2e14;
+  --brown:        #613910;
+  --brown-light:  #7a4a1a;
+  --olive:        #a8ba41;
+  --olive-dark:   #8a9a32;
+  --olive-dim:    rgba(168,186,65,0.08);
+  --olive-ring:   rgba(168,186,65,0.4);
+  --text:         #ecedf1;
+  --muted:        #9a8a6a;
+  --up:           #a8ba41;
+  --down:         #e05a3a;
+  --card-bg:      #231a0a;
+  --card-hover:   #2d2210;
+  --input-bg:     #1a1208;
+  --header-bg:    #231a0a;
+  --ticker-bg:    #231a0a;
+  --drawer-bg:    #1a1208;
+  --scrollbar-track: #231a0a;
+  --scrollbar-thumb: #3d2e14;
+  --depth-bid:    rgba(168,186,65,0.12);
+  --depth-ask:    rgba(224,90,58,0.12);
+  --sell-dim:     rgba(224,90,58,0.12);
 }
 
+/* ── Light theme ── */
+[data-theme="light"] {
+  --bg:           #f8f9fa;
+  --surface:      #ffffff;
+  --surface2:     #f0f2f5;
+  --border:       #e0e4ea;
+  --brown:        #613910;
+  --brown-light:  #7a4a1a;
+  --olive:        #6b8c00;
+  --olive-dark:   #527000;
+  --olive-dim:    rgba(107,140,0,0.1);
+  --olive-ring:   rgba(107,140,0,0.3);
+  --text:         #111827;
+  --muted:        #6b7280;
+  --up:           #16a34a;
+  --down:         #dc2626;
+  --card-bg:      #ffffff;
+  --card-hover:   #f3f4f6;
+  --input-bg:     #f9fafb;
+  --header-bg:    #ffffff;
+  --ticker-bg:    #f3f4f6;
+  --drawer-bg:    #ffffff;
+  --scrollbar-track: #f3f4f6;
+  --scrollbar-thumb: #d1d5db;
+  --depth-bid:    rgba(22,163,74,0.1);
+  --depth-ask:    rgba(220,38,38,0.1);
+  --sell-dim:     rgba(220,38,38,0.1);
+}
+
+/* ── Base ── */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background-color: var(--bg);
-  color: var(--light);
-  font-family: 'Inter', system-ui, sans-serif;
-  overflow: hidden;
-}
 
 html, body, #__next {
   height: 100%;
@@ -33,40 +69,46 @@ html, body, #__next {
   overflow-x: hidden;
 }
 
-::-webkit-scrollbar { width: 3px; height: 3px; }
-::-webkit-scrollbar-track { background: var(--surface); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
 
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 2px; }
+
+/* ── Animations ── */
 @keyframes ticker {
-  0% { transform: translateX(0); }
+  0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-
-@keyframes pulse-green {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
 @keyframes flash-up {
-  0% { background-color: rgba(168,186,65,0.25); }
+  0%   { background-color: rgba(168,186,65,0.25); }
   100% { background-color: transparent; }
 }
-
 @keyframes flash-down {
-  0% { background-color: rgba(224,90,58,0.25); }
+  0%   { background-color: rgba(224,90,58,0.25); }
   100% { background-color: transparent; }
 }
 
-.flash-up { animation: flash-up 0.6s ease-out; }
+.flash-up   { animation: flash-up   0.6s ease-out; }
 .flash-down { animation: flash-down 0.6s ease-out; }
 
-.ticker-wrap { overflow: hidden; white-space: nowrap; }
+.ticker-wrap  { overflow: hidden; white-space: nowrap; }
 .ticker-inner { display: inline-flex; animation: ticker 40s linear infinite; }
 
-.glow-olive { box-shadow: 0 0 20px rgba(168,186,65,0.15); }
+.glow-olive { box-shadow: 0 0 20px var(--olive-ring); }
 .glow-brown { box-shadow: 0 0 20px rgba(97,57,16,0.4); }
-
-.font-mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* ── Smooth theme transitions — only on non-interactive containers ── */
+div, section, aside, header, nav, main, footer, span:not(button span), p, label {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}

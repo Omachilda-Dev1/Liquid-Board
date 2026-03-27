@@ -4,9 +4,9 @@ import { Asset } from "@/lib/mockData";
 type Props = { assets: Asset[]; prices: Record<string, number>; prevPrices: Record<string, number> };
 
 export default function TickerTape({ assets, prices, prevPrices }: Props) {
-  const items = [...assets, ...assets]; // duplicate for seamless loop
+  const items = [...assets, ...assets];
   return (
-    <div className="ticker-wrap bg-[#231a0a] border-b border-[#3d2e14] py-1.5">
+    <div className="ticker-wrap py-1.5 border-b" style={{ background: "var(--ticker-bg)", borderColor: "var(--border)" }}>
       <div className="ticker-inner gap-8">
         {items.map((a, i) => {
           const price = prices[a.symbol] ?? a.price;
@@ -14,11 +14,11 @@ export default function TickerTape({ assets, prices, prevPrices }: Props) {
           const up = price >= prev;
           return (
             <span key={i} className="inline-flex items-center gap-2 px-4 text-xs">
-              <span className="text-[#a8ba41] font-bold font-mono">{a.symbol}</span>
-              <span className={`font-mono ${up ? "text-[#a8ba41]" : "text-[#e05a3a]"}`}>
+              <span className="font-bold font-mono" style={{ color: "var(--olive)" }}>{a.symbol}</span>
+              <span className="font-mono" style={{ color: up ? "var(--up)" : "var(--down)" }}>
                 ${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className={`${a.change24h >= 0 ? "text-[#a8ba41]" : "text-[#e05a3a]"}`}>
+              <span style={{ color: a.change24h >= 0 ? "var(--up)" : "var(--down)" }}>
                 {a.change24h >= 0 ? "▲" : "▼"} {Math.abs(a.change24h)}%
               </span>
             </span>
