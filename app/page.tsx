@@ -10,6 +10,7 @@ import Positions from "@/components/Positions";
 import TradeHistory, { Trade } from "@/components/TradeHistory";
 import MarketStats from "@/components/MarketStats";
 import Widgets from "@/components/Widgets";
+import MobileMenu from "@/components/MobileMenu";
 import { Position, calcPortfolioValue } from "@/lib/wallet";
 
 const INITIAL_BALANCE = 50000;
@@ -24,6 +25,7 @@ export default function Home() {
   const [usdBalance, setUsdBalance] = useState(INITIAL_BALANCE);
   const [activeTab, setActiveTab] = useState<"positions" | "history">("positions");
   const [mobileTab, setMobileTab] = useState<MobileTab>("chart");
+  const [menuOpen, setMenuOpen] = useState(false);
   const tradeId = useRef(0);
 
   const selectedAsset = assets.find((a) => a.symbol === selected)!;
@@ -106,11 +108,34 @@ export default function Home() {
               {totalPnL >= 0 ? "+" : ""}${totalPnL.toFixed(2)}
             </span>
           </div>
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={() => setMenuOpen(true)}
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5 rounded-lg border border-[#3d2e14] bg-[#2d2210] hover:border-[#613910] transition-colors"
+            aria-label="Open menu"
+          >
+            <span className="w-4 h-0.5 bg-[#a8ba41] rounded-full" />
+            <span className="w-4 h-0.5 bg-[#a8ba41] rounded-full" />
+            <span className="w-2.5 h-0.5 bg-[#a8ba41] rounded-full" />
+          </button>
         </div>
       </header>
 
       {/* ── Ticker tape ── */}
       <TickerTape assets={assets} prices={prices} prevPrices={prevPrices} />
+
+      {/* Mobile drawer menu */}
+      <MobileMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        activeTab={mobileTab}
+        onSelect={setMobileTab}
+        balance={`$${usdBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+        pnl={`${totalPnL >= 0 ? "+" : ""}$${totalPnL.toFixed(2)}`}
+        pnlPositive={totalPnL >= 0}
+        posCount={Object.keys(positions).length}
+        tradeCount={trades.length}
+      />
 
       {/* ══════════════════════════════════════════
           DESKTOP layout (lg+): 3-column terminal
@@ -221,10 +246,20 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════════
-          MOBILE layout (<md): bottom nav tabs
+          MOBILE layout (<md): full screen, hamburger nav
       ══════════════════════════════════════════ */}
       <div className="flex md:hidden flex-1 flex-col min-h-0 overflow-hidden">
-        {/* Content area */}
+        {/* Active tab label bar */}
+        <div className="flex items-center justify-between px-3 py-2 border-b border-[#3d2e14] bg-[#231a0a] flex-shrink-0">
+          <span className="text-[10px] text-[#9a8a6a] tracking-wider uppercase">{mobileTab}</span>
+          {mobileTab === "chart" && (
+            <span className="text-xs font-mono font-bold text-[#a8ba41]">
+              {selected}/USD · ${currentPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            </span>
+          )}
+        </div>
+
+        {/* Content area — full height, scrollable */}
         <div className="flex-1 overflow-y-auto">
           {mobileTab === "markets" && (
             <div className="p-2 space-y-1.5">
@@ -250,7 +285,7 @@ export default function Home() {
           )}
           {mobileTab === "trade" && (
             <div className="p-3 space-y-3">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#231a0a] border border-[#3d2e14]">
                 <span className="text-xs font-bold text-[#ecedf1]">{selected}/USD</span>
                 <span className="text-sm font-mono font-bold text-[#a8ba41]">
                   ${currentPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}
@@ -267,26 +302,6 @@ export default function Home() {
             </div>
           )}
         </div>
-
-        {/* Bottom nav */}
-        <nav className="flex-shrink-0 flex border-t border-[#3d2e14] bg-[#231a0a]">
-          {([
-            { id: "markets", icon: "◈", label: "Markets" },
-            { id: "chart",   icon: "◉", label: "Chart" },
-            { id: "trade",   icon: "⊕", label: "Trade" },
-            { id: "portfolio", icon: "◎", label: "Portfolio" },
-          ] as { id: MobileTab; icon: string; label: string }[]).map((tab) => (
-            <button key={tab.id} onClick={() => setMobileTab(tab.id)}
-              className={`flex-1 flex flex-col items-center py-2.5 gap-0.5 transition-colors ${
-                mobileTab === tab.id ? "text-[#a8ba41]" : "text-[#9a8a6a]"
-              }`}
-            >
-              <span className="text-base leading-none">{tab.icon}</span>
-              <span className="text-[9px] font-semibold">{tab.label}</span>
-              {mobileTab === tab.id && <span className="w-4 h-0.5 bg-[#a8ba41] rounded-full" />}
-            </button>
-          ))}
-        </nav>
       </div>
     </div>
   );
