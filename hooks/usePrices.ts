@@ -1,63 +1,78 @@
 "use client";
-import { useEffect, useRef, useState, useCallback } from "react";
-import { ASSETS, Asset, tickPrice, generateCandles, Candle } from "@/lib/mockData";
+import { useEffect, useRef, useState } from "react";
+import { ASSETS, Asset, Candle, TIMEFRAMES, TimeframeId, foldTick, generateDay, seriesFor, tickPrice } from "@/lib/mockData";
 
 export type PriceMap = Record<string, number>;
-export type CandleMap = Record<string, Candle[]>;
+export type SeriesMap = Record<string, Record<TimeframeId, Candle[]>>;
+export type RangeMap = Record<string, { high: number; low: number }>;
+
+const TICK_MS = 1500;
+
+/** One bridged day per asset; every timeframe and the 24h range derive from it. */
+function seedSeries(): { series: SeriesMap; ranges: RangeMap } {
+  const series: SeriesMap = {};
+  const ranges: RangeMap = {};
+  ASSETS.forEach((a) => {
+    const day = generateDay(a);
+    ranges[a.symbol] = { high: Math.max(...day.map((c) => c.high)), low: Math.min(...day.map((c) => c.low)) };
+    series[a.symbol] = Object.fromEntries(TIMEFRAMES.map((tf) => [tf.id, seriesFor(a, day, tf.minutes)])) as Record<TimeframeId, Candle[]>;
+  });
+  return { series, ranges };
+}
 
 export function usePrices() {
-  const [prices, setPrices] = useState<PriceMap>(() =>
-    Object.fromEntries(ASSETS.map((a) => [a.symbol, a.price]))
-  );
-  const [prevPrices, setPrevPrices] = useState<PriceMap>(() =>
-    Object.fromEntries(ASSETS.map((a) => [a.symbol, a.price]))
-  );
-  const [candles, setCandles] = useState<CandleMap>(() =>
-    Object.fromEntries(ASSETS.map((a) => [a.symbol, generateCandles(a.price)]))
-  );
-  const [assets] = useState<Asset[]>(ASSETS);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [prices, setPrices] = useState<PriceMap>(() => Object.fromEntries(ASSETS.map((a) => [a.symbol, a.price])));
+  const [prevPrices, setPrevPrices] = useState<PriceMap>(() => Object.fromEntries(ASSETS.map((a) => [a.symbol, a.price])));
+  const [ranges, setRanges] = useState<RangeMap>(() => Object.fromEntries(ASSETS.map((a) => [a.symbol, { high: a.high24h, low: a.low24h }])));
+  // Generated on the client only: random history would mismatch server HTML.
+  const [series, setSeries] = useState<SeriesMap | null>(null);
+  const [tick, setTick] = useState(0);
   const pricesRef = useRef(prices);
   pricesRef.current = prices;
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
+    const seeded = seedSeries();
+    setSeries(seeded.series);
+    setRanges(seeded.ranges);
+    const id = setInterval(() => {
       const current = pricesRef.current;
       const next: PriceMap = {};
       ASSETS.forEach((a) => { next[a.symbol] = tickPrice(current[a.symbol]); });
+      const now = Date.now();
 
-      setPrevPrices({ ...current });
+      setPrevPrices(current);
       setPrices(next);
-
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-      setCandles((prev) => {
-        const updated = { ...prev };
+      setTick((t) => t + 1);
+      setRanges((prev) => {
+        const out: RangeMap = {};
         ASSETS.forEach((a) => {
-          const last = prev[a.symbol].at(-1)!;
-          const newClose = next[a.symbol];
-          const newCandle: Candle = {
-            time: timeStr,
-            open: last.close,
-            high: Math.max(last.close, newClose) * (1 + Math.random() * 0.002),
-            low: Math.min(last.close, newClose) * (1 - Math.random() * 0.002),
-            close: newClose,
-            volume: a.price * (0.3 + Math.random()) * 800,
-          };
-          updated[a.symbol] = [...prev[a.symbol].slice(-99), newCandle];
+          const p = next[a.symbol];
+          out[a.symbol] = { high: Math.max(prev[a.symbol].high, p), low: Math.min(prev[a.symbol].low, p) };
         });
-        return updated;
+        return out;
       });
-    }, 1500);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+      setSeries((prev) => {
+        if (!prev) return prev;
+        const out: SeriesMap = {};
+        ASSETS.forEach((a) => {
+          const tickVol = (a.volume24h / a.price / 57600) * (0.3 + Math.random());
+          const bySym = {} as Record<TimeframeId, Candle[]>;
+          TIMEFRAMES.forEach((tf) => {
+            bySym[tf.id] = foldTick(prev[a.symbol][tf.id], next[a.symbol], tf.minutes, now, tickVol);
+          });
+          out[a.symbol] = bySym;
+        });
+        return out;
+      });
+    }, TICK_MS);
+    return () => clearInterval(id);
   }, []);
 
-  return { assets, prices, prevPrices, candles };
+  return { assets: ASSETS as Asset[], prices, prevPrices, ranges, series, tick };
 }
 
 export function useGasPrice() {
-  const [gas, setGas] = useState({ slow: 18, standard: 24, fast: 38 });
+  const [gas, setGas] = useState({ slow: 18.4, standard: 24.1, fast: 38.6 });
   useEffect(() => {
     const id = setInterval(() => {
       const base = 15 + Math.random() * 30;
@@ -72,6 +87,14 @@ export function useGasPrice() {
   return gas;
 }
 
+export const SENTIMENT_ZONES = [
+  { upTo: 25, label: "Extreme fear" },
+  { upTo: 45, label: "Fear" },
+  { upTo: 55, label: "Neutral" },
+  { upTo: 75, label: "Greed" },
+  { upTo: 100, label: "Extreme greed" },
+] as const;
+
 export function useFearGreed() {
   const [value, setValue] = useState(62);
   useEffect(() => {
@@ -80,7 +103,7 @@ export function useFearGreed() {
     }, 8000);
     return () => clearInterval(id);
   }, []);
-  const label = value < 25 ? "Extreme Fear" : value < 45 ? "Fear" : value < 55 ? "Neutral" : value < 75 ? "Greed" : "Extreme Greed";
-  const color = value < 25 ? "#e05a3a" : value < 45 ? "#e08a3a" : value < 55 ? "#a8ba41" : value < 75 ? "#a8ba41" : "#6abf41";
-  return { value: Math.round(value), label, color };
+  const rounded = Math.round(value);
+  const zone = SENTIMENT_ZONES.find((z) => rounded <= z.upTo) ?? SENTIMENT_ZONES[4];
+  return { value: rounded, label: zone.label };
 }

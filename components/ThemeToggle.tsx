@@ -1,67 +1,35 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Moon, Sun } from "lucide-react";
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(true);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
 
-  // Read saved preference on mount
   useEffect(() => {
-    const saved = localStorage.getItem("lb-theme");
-    const dark = saved !== "light";
-    setIsDark(dark);
-    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    setTheme(document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark");
   }, []);
 
   function toggle() {
-    const next = !isDark;
-    setIsDark(next);
-    const theme = next ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("lb-theme", theme);
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.setAttribute("data-theme", next);
+    try {
+      localStorage.setItem("lb-theme", next);
+    } catch {
+      /* private mode: theme just won't persist */
+    }
   }
 
+  const Icon = theme === "dark" ? Sun : Moon;
   return (
     <button
       type="button"
       onClick={toggle}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      style={{
-        position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-        flexShrink: 0,
-        width: 44,
-        height: 24,
-        borderRadius: 999,
-        border: "1px solid var(--olive)",
-        background: isDark ? "var(--brown)" : "var(--surface2)",
-        cursor: "pointer",
-        padding: 0,
-        transition: "background 0.25s",
-        zIndex: 10,
-      }}
+      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      title={theme === "dark" ? "Light theme" : "Dark theme"}
+      className="flex h-9 w-9 items-center justify-center border border-[#4a4a4a] text-band-ink transition-colors hover:bg-band-ink hover:text-band"
     >
-      <span
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          top: 2,
-          left: isDark ? 2 : 22,
-          width: 18,
-          height: 18,
-          borderRadius: "50%",
-          background: "var(--olive)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 10,
-          pointerEvents: "none",
-          transition: "left 0.25s ease",
-          userSelect: "none",
-        }}
-      >
-        {isDark ? "🌙" : "☀️"}
-      </span>
+      <Icon size={16} strokeWidth={2} />
     </button>
   );
 }

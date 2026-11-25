@@ -1,373 +1,177 @@
 "use client";
-import { useState, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePrices } from "@/hooks/usePrices";
+import { STARTING_BALANCE, useAccount } from "@/hooks/useAccount";
+import { open24h } from "@/lib/mockData";
+import { Side, calcPortfolioValue } from "@/lib/wallet";
+import TopBar from "@/components/TopBar";
 import TickerTape from "@/components/TickerTape";
-import PriceCard from "@/components/PriceCard";
-import Chart from "@/components/Chart";
+import MarketList from "@/components/MarketList";
+import PairHeader from "@/components/PairHeader";
+import PriceChart from "@/components/PriceChart";
+import RouteStrip from "@/components/RouteStrip";
+import OrderTicket from "@/components/OrderTicket";
 import OrderBook from "@/components/OrderBook";
-import OrderPanel from "@/components/OrderPanel";
-import Positions from "@/components/Positions";
-import TradeHistory, { Trade } from "@/components/TradeHistory";
-import MarketStats from "@/components/MarketStats";
-import Widgets from "@/components/Widgets";
-import MobileMenu from "@/components/MobileMenu";
-import ThemeToggle from "@/components/ThemeToggle";
-import { Position, calcPortfolioValue } from "@/lib/wallet";
+import AccountPanel from "@/components/AccountPanel";
+import PortfolioTables from "@/components/PortfolioTables";
+import MobileNav, { MobileTab } from "@/components/MobileNav";
+import EventToasts from "@/components/EventToasts";
 
-const INITIAL_BALANCE = 50000;
+type Layout = "desktop" | "tablet" | "mobile";
 
-type MobileTab = "markets" | "chart" | "trade" | "portfolio";
+function useLayout(): Layout | null {
+  const [layout, setLayout] = useState<Layout | null>(null);
+  useEffect(() => {
+    const lg = window.matchMedia("(min-width: 1180px)");
+    const md = window.matchMedia("(min-width: 768px)");
+    const update = () => setLayout(lg.matches ? "desktop" : md.matches ? "tablet" : "mobile");
+    update();
+    lg.addEventListener("change", update);
+    md.addEventListener("change", update);
+    return () => { lg.removeEventListener("change", update); md.removeEventListener("change", update); };
+  }, []);
+  return layout;
+}
 
 export default function Home() {
-  const { assets, prices, prevPrices, candles } = usePrices();
+  const { assets, prices, prevPrices, ranges, series, tick } = usePrices();
+  const account = useAccount(prices);
+  const layout = useLayout();
   const [selected, setSelected] = useState("BTC");
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [positions, setPositions] = useState<Record<string, Position>>({});
-  const [usdBalance, setUsdBalance] = useState(INITIAL_BALANCE);
-  const [activeTab, setActiveTab] = useState<"positions" | "history">("positions");
+  const [side, setSide] = useState<Side>("buy");
   const [mobileTab, setMobileTab] = useState<MobileTab>("chart");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const tradeId = useRef(0);
+  const [picked, setPicked] = useState<{ value: number; nonce: number } | undefined>();
 
-  const selectedAsset = assets.find((a) => a.symbol === selected)!;
-  const currentPrice = prices[selected] ?? selectedAsset.price;
-  const totalVal = usdBalance + calcPortfolioValue(positions, prices);
-  const totalPnL = totalVal - INITIAL_BALANCE;
+  const asset = assets.find((a) => a.symbol === selected)!;
+  const price = prices[selected];
+  const open = open24h(asset);
+  const range = ranges[selected];
+  const position = account.positions[selected];
+  const positionsValue = calcPortfolioValue(account.positions, prices);
+  const debt = Object.values(account.positions).reduce((s, p) => s + p.debt, 0);
+  const equity = account.cash + positionsValue;
+  const pnl = equity - STARTING_BALANCE;
 
-  function handleOrder(side: "buy" | "sell", qty: number, total: number, orderType: string) {
-    const cost = qty * currentPrice;
-    if (side === "buy" && cost > usdBalance) return;
-    setTrades((prev) => [
-      ...prev,
-      { id: tradeId.current++, side, symbol: selected, qty, price: currentPrice, total: cost, orderType, time: new Date().toLocaleTimeString() },
-    ]);
-    if (side === "buy") {
-      setUsdBalance((b) => b - cost);
-      setPositions((prev) => {
-        const existing = prev[selected];
-        if (existing) {
-          const newQty = existing.qty + qty;
-          const newAvg = (existing.avgEntry * existing.qty + currentPrice * qty) / newQty;
-          return { ...prev, [selected]: { ...existing, qty: newQty, avgEntry: newAvg } };
-        }
-        return { ...prev, [selected]: { symbol: selected, qty, avgEntry: currentPrice, side: "long" } };
-      });
-    } else {
-      const pos = positions[selected];
-      const sellQty = Math.min(qty, pos?.qty ?? 0);
-      const proceeds = sellQty * currentPrice;
-      setUsdBalance((b) => b + proceeds);
-      setPositions((prev) => {
-        const existing = prev[selected];
-        if (!existing) return prev;
-        const newQty = existing.qty - sellQty;
-        if (newQty <= 0) { const { [selected]: _, ...rest } = prev; return rest; }
-        return { ...prev, [selected]: { ...existing, qty: newQty } };
-      });
+  const pickPrice = useCallback((value: number) => {
+    setPicked({ value, nonce: Date.now() });
+    if (layout !== "desktop") setMobileTab("trade");
+  }, [layout]);
+
+  // Keyboard: B / S pick the side, 1-9 pick a market. Ignored while typing.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const el = e.target as HTMLElement;
+      if (e.metaKey || e.ctrlKey || e.altKey || el.closest("input, textarea, select, [contenteditable]")) return;
+      const k = e.key.toLowerCase();
+      if (k === "b") setSide("buy");
+      else if (k === "s") setSide("sell");
+      else if (/^[1-9]$/.test(k) && assets[+k - 1]) setSelected(assets[+k - 1].symbol);
     }
-  }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [assets]);
 
-  function closePosition(symbol: string) {
-    const pos = positions[symbol];
-    if (!pos) return;
-    const price = prices[symbol] ?? pos.avgEntry;
-    const proceeds = pos.qty * price;
-    setUsdBalance((b) => b + proceeds);
-    setTrades((prev) => [
-      ...prev,
-      { id: tradeId.current++, side: "sell", symbol, qty: pos.qty, price, total: proceeds, orderType: "Market", time: new Date().toLocaleTimeString() },
-    ]);
-    setPositions((prev) => { const { [symbol]: _, ...rest } = prev; return rest; });
-  }
+  const selectMarket = (sym: string) => {
+    setSelected(sym);
+    if (layout === "mobile") setMobileTab("chart");
+  };
 
+  const marketList = (
+    <MarketList assets={assets} prices={prices} prevPrices={prevPrices} selected={selected} onSelect={selectMarket} tick={tick} />
+  );
+  const pairHeader = (
+    <PairHeader asset={asset} price={price} prevPrice={prevPrices[selected]} open={open} high={range.high} low={range.low} tick={tick} />
+  );
+  const chart = <PriceChart series={series?.[selected] ?? null} price={price} route={asset.route} routeInk={asset.routeInk} entry={position?.avgEntry} />;
+  const route = <RouteStrip asset={asset} price={price} open={open} high={range.high} low={range.low} entry={position?.avgEntry} />;
+  const ticket = (
+    <OrderTicket asset={asset} price={price} cash={account.cash} held={position?.qty ?? 0} side={side} onSideChange={setSide}
+      onOrder={account.placeOrder} pickedPrice={picked} />
+  );
+  const book = <OrderBook symbol={selected} price={price} route={asset.route} routeInk={asset.routeInk} onPickPrice={pickPrice} />;
+  const bookFill = <OrderBook symbol={selected} price={price} rows={24} fill route={asset.route} routeInk={asset.routeInk} onPickPrice={pickPrice} />;
+  const accountPanel = <AccountPanel cash={account.cash} positionsValue={positionsValue} debt={debt} onReset={layout === "desktop" ? undefined : account.reset} />;
+  const portfolio = (compact: boolean) => (
+    <PortfolioTables positions={account.positions} orders={account.orders} trades={account.trades} prices={prices}
+      onClose={account.closePosition} onCancel={account.cancelOrder} onSelect={selectMarket} compact={compact} />
+  );
+  const openCount = Object.keys(account.positions).length + account.orders.length;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: "var(--bg)" }}>
-      {/* ── Header ── */}
-      <header className="flex items-center justify-between px-3 md:px-4 py-2 border-b flex-shrink-0"
-        style={{ background: "var(--header-bg)", borderColor: "var(--border)" }}>
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: "var(--brown)" }}>
-            <span className="font-black text-xs" style={{ color: "var(--olive)" }}>LB</span>
-          </div>
-          <div>
-            <div className="font-black text-xs sm:text-sm tracking-widest leading-tight" style={{ color: "var(--text)" }}>LIQUID BOARD</div>
-            <div className="text-[7px] sm:text-[8px] tracking-wider hidden sm:block" style={{ color: "var(--muted)" }}>DECENTRALIZED TRADING TERMINAL</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3 text-[9px] sm:text-[10px]">
-          <div className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--olive)" }} />
-            <span className="hidden sm:inline" style={{ color: "var(--muted)" }}>LIVE</span>
-          </div>
-          <div style={{ color: "var(--muted)" }}>
-            <span className="hidden sm:inline">Balance: </span>
-            <span className="font-mono font-bold" style={{ color: "var(--olive)" }}>
-              ${usdBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
-          <div className="hidden md:block" style={{ color: "var(--muted)" }}>
-            P&L: <span className="font-mono font-bold" style={{ color: totalPnL >= 0 ? "var(--up)" : "var(--down)" }}>
-              {totalPnL >= 0 ? "+" : ""}${totalPnL.toFixed(2)}
-            </span>
-          </div>
-          {/* Theme toggle */}
-          <ThemeToggle />
-          {/* Hamburger — mobile only */}
-          <button
-            onClick={() => setMenuOpen(true)}
-            className="md:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5 rounded-lg border transition-colors"
-            style={{ borderColor: "var(--border)", background: "var(--surface2)" }}
-            aria-label="Open menu"
-          >
-            <span className="w-4 h-0.5 rounded-full" style={{ background: "var(--olive)" }} />
-            <span className="w-4 h-0.5 rounded-full" style={{ background: "var(--olive)" }} />
-            <span className="w-2.5 h-0.5 rounded-full" style={{ background: "var(--olive)" }} />
-          </button>
-        </div>
-      </header>
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-ground text-ink">
+      <TopBar equity={equity} cash={account.cash} pnl={pnl} pnlPct={(pnl / STARTING_BALANCE) * 100} onReset={account.reset} />
+      {layout && layout !== "mobile" ? <TickerTape assets={assets} prices={prices} onSelect={selectMarket} /> : null}
 
-      {/* ── Ticker tape ── */}
-      <TickerTape assets={assets} prices={prices} prevPrices={prevPrices} />
-
-      {/* Mobile drawer menu */}
-      <MobileMenu
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        activeTab={mobileTab}
-        onSelect={setMobileTab}
-        balance={`$${usdBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-        pnl={`${totalPnL >= 0 ? "+" : ""}$${totalPnL.toFixed(2)}`}
-        pnlPositive={totalPnL >= 0}
-        posCount={Object.keys(positions).length}
-        tradeCount={trades.length}
-      />
-
-      {/* ══════════════════════════════════════════
-          DESKTOP layout (lg+): 3-column terminal
-      ══════════════════════════════════════════ */}
-      <div className="hidden lg:flex flex-1 min-h-0 overflow-hidden">
-        {/* Left: asset list */}
-        <aside className="w-56 border-r flex flex-col flex-shrink-0 overflow-hidden" style={{ borderColor: "var(--border)" }}>
-          <div className="px-2 py-2 border-b" style={{ borderColor: "var(--border)" }}>
-            <div className="text-[9px] tracking-wider" style={{ color: "var(--muted)" }}>MARKETS</div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
-            {assets.map((asset) => (
-              <PriceCard key={asset.symbol} asset={asset}
-                price={prices[asset.symbol] ?? asset.price}
-                prevPrice={prevPrices[asset.symbol] ?? asset.price}
-                selected={selected === asset.symbol}
-                onClick={() => setSelected(asset.symbol)}
-              />
-            ))}
-          </div>
-        </aside>
-
-        {/* Center: chart + stats + tabs */}
-        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <AssetHeader asset={selectedAsset} price={currentPrice} />
-          <div className="flex-1 min-h-0 p-3 border-b" style={{ borderColor: "var(--border)" }}>
-            <Chart symbol={selected} candles={candles[selected] ?? []} currentPrice={currentPrice} />
-          </div>
-          <div className="p-3 border-b flex-shrink-0" style={{ borderColor: "var(--border)" }}>
-            <MarketStats asset={selectedAsset} price={currentPrice} />
-          </div>
-          <BottomTabs activeTab={activeTab} setActiveTab={setActiveTab}
-            positions={positions} prices={prices} trades={trades}
-            onClose={closePosition} posCount={Object.keys(positions).length} tradeCount={trades.length}
-          />
-        </main>
-
-        {/* Right: widgets + order + book */}
-        <aside className="w-64 border-l flex flex-col flex-shrink-0 overflow-y-auto" style={{ borderColor: "var(--border)" }}>
-          <div className="p-3 space-y-3">
-            <Widgets usdBalance={usdBalance} positions={positions} prices={prices} totalDeposited={INITIAL_BALANCE} />
-            <OrderPanel symbol={selected} price={currentPrice} balance={usdBalance} onOrder={handleOrder} />
-            <OrderBook symbol={selected} price={currentPrice} />
-          </div>
-        </aside>
-      </div>
-
-      {/* ══════════════════════════════════════════
-          TABLET layout (md–lg): 2-column
-      ══════════════════════════════════════════ */}
-      <div className="hidden md:flex lg:hidden flex-1 min-h-0 overflow-hidden">
-        {/* Left: asset list narrow */}
-        <aside className="w-44 border-r flex flex-col flex-shrink-0 overflow-hidden" style={{ borderColor: "var(--border)" }}>
-          <div className="px-2 py-1.5 border-b" style={{ borderColor: "var(--border)" }}>
-            <div className="text-[9px] tracking-wider" style={{ color: "var(--muted)" }}>MARKETS</div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
-            {assets.map((asset) => (
-              <PriceCard key={asset.symbol} asset={asset}
-                price={prices[asset.symbol] ?? asset.price}
-                prevPrice={prevPrices[asset.symbol] ?? asset.price}
-                selected={selected === asset.symbol}
-                onClick={() => setSelected(asset.symbol)}
-              />
-            ))}
-          </div>
-        </aside>
-
-        {/* Right: tabbed content */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <AssetHeader asset={selectedAsset} price={currentPrice} />
-          {/* Tab bar */}
-          <div className="flex border-b flex-shrink-0" style={{ borderColor: "var(--border)" }}>
-            {(["chart", "trade", "portfolio"] as const).map((t) => (
-              <button key={t} onClick={() => setMobileTab(t as MobileTab)}
-                className="flex-1 py-2 text-[10px] font-semibold capitalize transition-colors border-b-2"
-                style={{
-                  borderBottomColor: mobileTab === t ? "var(--olive)" : "transparent",
-                  color: mobileTab === t ? "var(--olive)" : "var(--muted)",
-                }}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            {mobileTab === "chart" && (
-              <div className="p-3 space-y-3">
-                <div className="h-64">
-                  <Chart symbol={selected} candles={candles[selected] ?? []} currentPrice={currentPrice} />
+      {layout === "desktop" ? (
+        <div className="grid min-h-0 flex-1 grid-cols-[240px_minmax(0,1fr)_320px] min-[1440px]:grid-cols-[260px_minmax(0,1fr)_340px]">
+          <aside className="min-h-0 overflow-y-auto border-r border-rule">
+            {marketList}
+          </aside>
+          {/* On short windows the centre scrolls instead of crushing the chart. */}
+          <main className="min-h-0 overflow-y-auto">
+            <div className="flex min-h-full flex-col">
+              {pairHeader}
+              <div className="grid min-h-[500px] flex-1 grid-cols-[minmax(0,1fr)_272px]">
+                <div className="flex min-w-0 flex-col">
+                  <div className="min-h-[300px] flex-1">{chart}</div>
+                  {route}
                 </div>
-                <MarketStats asset={selectedAsset} price={currentPrice} />
-                <OrderBook symbol={selected} price={currentPrice} />
+                <div className="relative border-l border-rule">
+                  <div className="absolute inset-0">{bookFill}</div>
+                </div>
               </div>
-            )}
-            {mobileTab === "trade" && (
-              <div className="p-3 space-y-3">
-                <OrderPanel symbol={selected} price={currentPrice} balance={usdBalance} onOrder={handleOrder} />
-                <Widgets usdBalance={usdBalance} positions={positions} prices={prices} totalDeposited={INITIAL_BALANCE} />
-              </div>
-            )}
-            {mobileTab === "portfolio" && (
-              <div className="p-3 space-y-3">
-                <Positions positions={positions} prices={prices} onClose={closePosition} />
-                <TradeHistory trades={trades} />
-              </div>
-            )}
-          </div>
+              <div className="h-[220px] shrink-0">{portfolio(false)}</div>
+            </div>
+          </main>
+          <aside className="min-h-0 overflow-y-auto border-l border-rule">
+            {ticket}
+            {accountPanel}
+          </aside>
         </div>
-      </div>
+      ) : null}
 
-      {/* ══════════════════════════════════════════
-          MOBILE layout (<md): full screen, hamburger nav
-      ══════════════════════════════════════════ */}
-      <div className="flex md:hidden flex-1 flex-col min-h-0 overflow-hidden">
-        {/* Active tab label bar */}
-        <div className="flex items-center justify-between px-3 py-2 border-b flex-shrink-0"
-          style={{ background: "var(--header-bg)", borderColor: "var(--border)" }}>
-          <span className="text-[10px] tracking-wider uppercase" style={{ color: "var(--muted)" }}>{mobileTab}</span>
-          {mobileTab === "chart" && (
-            <span className="text-xs font-mono font-bold" style={{ color: "var(--olive)" }}>
-              {selected}/USD · ${currentPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-            </span>
-          )}
+      {layout === "tablet" ? (
+        <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)]">
+          <aside className="min-h-0 overflow-y-auto border-r border-rule">
+            {marketList}
+            {accountPanel}
+          </aside>
+          <main className="flex min-h-0 flex-col">
+            {pairHeader}
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {mobileTab === "trade" ? (
+                <div className="grid grid-cols-2 border-b border-rule"><div className="border-r border-rule">{ticket}</div><div>{book}</div></div>
+              ) : mobileTab === "portfolio" ? (
+                <div className="h-full">{portfolio(false)}</div>
+              ) : (
+                <div className="flex h-full min-h-[460px] flex-col"><div className="min-h-0 flex-1">{chart}</div>{route}</div>
+              )}
+            </div>
+            <MobileNav active={mobileTab === "markets" ? "chart" : mobileTab} onChange={setMobileTab} badge={openCount} include={["chart", "trade", "portfolio"]} />
+          </main>
         </div>
+      ) : null}
 
-        {/* Content area — full height, scrollable */}
-        <div className="flex-1 overflow-y-auto">
-          {mobileTab === "markets" && (
-            <div className="p-2 space-y-1.5">
-              {assets.map((asset) => (
-                <PriceCard key={asset.symbol} asset={asset}
-                  price={prices[asset.symbol] ?? asset.price}
-                  prevPrice={prevPrices[asset.symbol] ?? asset.price}
-                  selected={selected === asset.symbol}
-                  onClick={() => { setSelected(asset.symbol); setMobileTab("chart"); }}
-                />
-              ))}
-            </div>
-          )}
-          {mobileTab === "chart" && (
-            <div className="p-3 space-y-3">
-              <AssetHeader asset={selectedAsset} price={currentPrice} />
-              <div style={{ height: 260 }}>
-                <Chart symbol={selected} candles={candles[selected] ?? []} currentPrice={currentPrice} />
-              </div>
-              <MarketStats asset={selectedAsset} price={currentPrice} />
-              <OrderBook symbol={selected} price={currentPrice} />
-            </div>
-          )}
-          {mobileTab === "trade" && (
-            <div className="p-3 space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl border"
-                style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
-                <span className="text-xs font-bold" style={{ color: "var(--text)" }}>{selected}/USD</span>
-                <span className="text-sm font-mono font-bold" style={{ color: "var(--olive)" }}>
-                  ${currentPrice.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-              <OrderPanel symbol={selected} price={currentPrice} balance={usdBalance} onOrder={handleOrder} />
-              <Widgets usdBalance={usdBalance} positions={positions} prices={prices} totalDeposited={INITIAL_BALANCE} />
-            </div>
-          )}
-          {mobileTab === "portfolio" && (
-            <div className="p-3 space-y-3">
-              <Positions positions={positions} prices={prices} onClose={closePosition} />
-              <TradeHistory trades={trades} />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+      {layout === "mobile" ? (
+        <>
+          <main className="min-h-0 flex-1 overflow-y-auto">
+            {mobileTab === "markets" ? <>{marketList}{accountPanel}</> : null}
+            {mobileTab === "chart" ? (
+              <>
+                {pairHeader}
+                <div className="h-[340px]">{chart}</div>
+                {route}
+                {book}
+              </>
+            ) : null}
+            {mobileTab === "trade" ? <>{pairHeader}{ticket}</> : null}
+            {mobileTab === "portfolio" ? <div className="min-h-full">{portfolio(true)}</div> : null}
+          </main>
+          <MobileNav active={mobileTab} onChange={setMobileTab} badge={openCount} />
+        </>
+      ) : null}
 
-/* ── Shared sub-components ── */
-
-function AssetHeader({ asset, price }: { asset: { name: string; symbol: string; change24h: number }; price: number }) {
-  return (
-    <div className="px-3 py-2 border-b flex items-center gap-3 flex-shrink-0 flex-wrap" style={{ borderColor: "var(--border)" }}>
-      <div>
-        <span className="font-black text-sm" style={{ color: "var(--text)" }}>{asset.name}</span>
-        <span className="text-xs ml-2" style={{ color: "var(--muted)" }}>{asset.symbol}/USD</span>
-      </div>
-      <div className="text-lg font-mono font-bold" style={{ color: "var(--text)" }}>
-        ${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: price < 1 ? 4 : 2 })}
-      </div>
-      <div className="text-sm font-mono font-semibold" style={{ color: asset.change24h >= 0 ? "var(--up)" : "var(--down)" }}>
-        {asset.change24h >= 0 ? "▲" : "▼"} {Math.abs(asset.change24h)}%
-      </div>
-    </div>
-  );
-}
-
-function BottomTabs({ activeTab, setActiveTab, positions, prices, trades, onClose, posCount, tradeCount }: {
-  activeTab: "positions" | "history";
-  setActiveTab: (t: "positions" | "history") => void;
-  positions: Record<string, Position>;
-  prices: Record<string, number>;
-  trades: Trade[];
-  onClose: (s: string) => void;
-  posCount: number;
-  tradeCount: number;
-}) {
-  return (
-    <div className="flex-shrink-0" style={{ height: 220 }}>
-      <div className="flex border-b" style={{ borderColor: "var(--border)" }}>
-        {(["positions", "history"] as const).map((tab) => (
-          <button key={tab} onClick={() => setActiveTab(tab)}
-            className="px-4 py-2 text-xs font-semibold capitalize transition-colors border-b-2"
-            style={{
-              borderBottomColor: activeTab === tab ? "var(--olive)" : "transparent",
-              color: activeTab === tab ? "var(--olive)" : "var(--muted)",
-            }}
-          >
-            {tab === "positions" ? `Positions (${posCount})` : `History (${tradeCount})`}
-          </button>
-        ))}
-      </div>
-      <div className="overflow-y-auto" style={{ height: 180 }}>
-        {activeTab === "positions"
-          ? <Positions positions={positions} prices={prices} onClose={onClose} />
-          : <TradeHistory trades={trades} />
-        }
-      </div>
+      <EventToasts events={account.events} />
     </div>
   );
 }

@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-25T00:00:00Z",
+  "title": "Design System: LIQUID BOARD",
+  "extensions": {
+    "colorMeta": {
+      "ground": { "role": "neutral", "displayName": "Platform Black", "canonical": "#161616", "tonalRamp": ["#0a0a0a", "#161616", "#1e1e1e", "#262626", "#4a4a4a", "#8a8a86", "#b4b4b0", "#f2f2f0"] },
+      "ground-light": { "role": "neutral", "displayName": "Off-White Wall", "canonical": "#fafaf8", "tonalRamp": ["#141414", "#4a4a47", "#6b6b67", "#b5b5b0", "#dcdcd8", "#e6e6e3", "#f0f0ee", "#fafaf8"] },
+      "band": { "role": "neutral", "displayName": "Sign Black (dark)", "canonical": "#000000", "tonalRamp": ["#000000", "#0a0a0a", "#141414", "#2f2f2f", "#4a4a4a", "#a8a8a4", "#d0d0cc", "#f2f2f0"] },
+      "band-light": { "role": "neutral", "displayName": "Sign Black (light)", "canonical": "#141414", "tonalRamp": ["#000000", "#141414", "#262626", "#4a4a4a", "#8a8a86", "#b4b4b0", "#dcdcd8", "#fafaf8"] },
+      "ink": { "role": "neutral", "displayName": "Platform Ink", "canonical": "#f2f2f0", "tonalRamp": ["#262626", "#4a4a4a", "#6b6b67", "#8a8a86", "#a8a8a4", "#b4b4b0", "#dcdcd8", "#f2f2f0"] },
+      "selected": { "role": "neutral", "displayName": "Inversion", "canonical": "#f2f2f0", "tonalRamp": ["#141414", "#2f2f2f", "#4a4a4a", "#8a8a86", "#b4b4b0", "#dcdcd8", "#e6e6e3", "#f2f2f0"] },
+      "up": { "role": "secondary", "displayName": "Signal Green (dark text)", "canonical": "#2fc46c", "tonalRamp": ["#00381a", "#00592b", "#00702f", "#007a33", "#1fa557", "#2fc46c", "#7edda3", "#c9f2d8"] },
+      "down": { "role": "secondary", "displayName": "Signal Red (dark text)", "canonical": "#ff5c50", "tonalRamp": ["#4a0b07", "#7a150f", "#b8211a", "#c4231a", "#d42a20", "#ff5c50", "#ff9a91", "#ffd6d2"] },
+      "up-light": { "role": "secondary", "displayName": "Signal Green (light text, fill)", "canonical": "#007a33" },
+      "down-light": { "role": "secondary", "displayName": "Signal Red (light text, fill)", "canonical": "#c4231a" },
+      "up-fill": { "role": "secondary", "displayName": "Buy Fill", "canonical": "#007a33" },
+      "down-fill": { "role": "secondary", "displayName": "Sell Fill (dark)", "canonical": "#d42a20" },
+      "sel-up": { "role": "secondary", "displayName": "Signal Green on Inversion (dark)", "canonical": "#00702f" },
+      "sel-down": { "role": "secondary", "displayName": "Signal Red on Inversion (dark)", "canonical": "#b8211a" },
+      "focus": { "role": "tertiary", "displayName": "Focus Yellow", "canonical": "#fccc0a" },
+      "focus-light": { "role": "tertiary", "displayName": "Focus Blue", "canonical": "#2a5bd7" },
+      "route-btc": { "role": "primary", "displayName": "Orange Line (BTC)", "canonical": "#ff6319" },
+      "route-eth": { "role": "primary", "displayName": "Blue Line (ETH)", "canonical": "#2a5bd7" },
+      "route-sol": { "role": "primary", "displayName": "Purple Line (SOL)", "canonical": "#b933ad" },
+      "route-avax": { "role": "primary", "displayName": "Grey Line (AVAX)", "canonical": "#a7a9ac" },
+      "route-link": { "role": "primary", "displayName": "Cyan Line (LINK)", "canonical": "#00add0" },
+      "route-uni": { "role": "primary", "displayName": "Magenta Line (UNI)", "canonical": "#e05fae" },
+      "route-aapl": { "role": "primary", "displayName": "Slate Line (AAPL)", "canonical": "#8d8f92" },
+      "route-nvda": { "role": "primary", "displayName": "Brown Line (NVDA)", "canonical": "#996633" },
+      "route-tsla": { "role": "primary", "displayName": "Yellow Line (TSLA)", "canonical": "#fccc0a" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Live Price", "purpose": "The selected market's price in the pair header; 32px on mobile, 40px from md." },
+      "headline": { "displayName": "Pair Name", "purpose": "Asset name in the pair header." },
+      "title": { "displayName": "Sign Label", "purpose": "Uppercase sign band labels and the 24H ROUTE heading." },
+      "body": { "displayName": "Body", "purpose": "Base text, market names, summaries, tables." },
+      "label": { "displayName": "Label", "purpose": "Field labels, stat captions; 11px uppercase for column heads and band stat labels." },
+      "figure": { "displayName": "Figure", "purpose": "Every number: tabular, slashed-zero JetBrains Mono." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-signal", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Tick flashes and the NOW train." },
+      { "name": "tick-flash", "value": "900ms", "purpose": "Signal wash fading from a changed price to transparent." },
+      { "name": "ticker", "value": "60s linear infinite", "purpose": "Ticker strip scroll; pauses on hover." },
+      { "name": "train", "value": "1200ms", "purpose": "NOW train moving along the 24H ROUTE (transition on left)." },
+      { "name": "bullet-mute", "value": "300ms", "purpose": "Route bullet saturation and opacity change on selection." },
+      { "name": "meter", "value": "700ms ease-out", "purpose": "Fear and greed marker." },
+      { "name": "reduced-motion", "value": "animation: none; transition-duration: 0.01ms", "purpose": "Under prefers-reduced-motion the ticker and flashes stop and transitions are cut." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "0-767px" },
+      { "name": "tablet", "value": "768px" },
+      { "name": "desktop", "value": "1180px" }
+    ],
+    "themes": {
+      "default": "dark",
+      "attribute": "data-theme",
+      "persistence": "localStorage lb-theme, applied before first paint"
+    },
+    "routeMuting": "Unselected route bullets: filter saturate(0.35), opacity 0.8. Full strength on the selected market and in the ticker strip."
+  },
+  "components": [
+    {
+      "name": "Sign Band",
+      "kind": "custom",
+      "refersTo": "sign-band",
+      "description": "Black band naming a work area, with a 1px white rule inset 4px from the top.",
+      "html": "<div class=\"ds-band\"><h2 class=\"ds-band-label\">Order book</h2><span class=\"ds-band-meta\">Click to set limit</span></div>",
+      "css": ".ds-band { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; padding: 4px 16px 0; background: var(--band, #000); color: var(--band-ink, #f2f2f0); font-family: var(--font-sans), 'Helvetica Neue', Arial, sans-serif; } .ds-band::before { content: ''; position: absolute; left: 0; right: 0; top: 4px; height: 1px; background: var(--band-rule, #f2f2f0); opacity: 0.9; } .ds-band-label { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; } .ds-band-meta { font-size: 12px; color: var(--band-ink-2, #a8a8a4); }"
+    },
+    {
+      "name": "Route Bullet",
+      "kind": "chip",
+      "refersTo": "route-bullet",
+      "description": "Round asset bullet in its route colour; muted when the market is not selected.",
+      "html": "<span class=\"ds-bullet\" style=\"background:#ff6319;color:#141414\">BTC</span><span class=\"ds-bullet ds-bullet-muted\" style=\"background:#2a5bd7;color:#fff\">ETH</span>",
+      "css": ".ds-bullet { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-right: 8px; border-radius: 9999px; font-family: var(--font-sans), 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 800; letter-spacing: -0.02em; transition: filter 300ms, opacity 300ms; } .ds-bullet-muted { filter: saturate(0.35); opacity: 0.8; } .ds-bullet-muted:hover { filter: none; opacity: 1; }"
+    },
+    {
+      "name": "24H Route",
+      "kind": "custom",
+      "refersTo": "route-strip",
+      "description": "Signature: the day's range as a station line with the live price as a round NOW train.",
+      "html": "<div class=\"ds-route\"><div class=\"ds-route-line\"></div><div class=\"ds-route-done\" style=\"width:62%\"></div><span class=\"ds-station\" style=\"left:0%\"></span><span class=\"ds-station ds-interchange\" style=\"left:38%\"></span><span class=\"ds-station\" style=\"left:100%\"></span><span class=\"ds-train\" style=\"left:62%\">Now</span></div>",
+      "css": ".ds-route { position: relative; height: 64px; margin: 0 16px; } .ds-route-line { position: absolute; left: 0; right: 0; top: 30px; height: 8px; border-radius: 9999px; background: #ff6319; } .ds-route-done { position: absolute; left: 0; top: 30px; height: 8px; border-radius: 9999px; background: var(--ink, #f2f2f0); opacity: 0.25; } .ds-station { position: absolute; top: 25px; width: 18px; height: 18px; transform: translateX(-50%); border-radius: 9999px; border: 4px solid var(--ink, #f2f2f0); background: var(--ground, #161616); box-sizing: border-box; } .ds-interchange { width: 32px; } .ds-train { position: absolute; top: 18px; z-index: 1; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; transform: translateX(-50%); border-radius: 9999px; border: 3px solid var(--ink, #f2f2f0); background: #ff6319; color: #141414; font-family: var(--font-sans), sans-serif; font-size: 9px; font-weight: 800; text-transform: uppercase; box-sizing: border-box; transition: left 1200ms cubic-bezier(0.16, 1, 0.3, 1); }"
+    },
+    {
+      "name": "Market Row",
+      "kind": "card",
+      "refersTo": "market-row-selected",
+      "description": "Markets rail row; the selected row inverts and its change uses the on-inversion signal colours.",
+      "html": "<button class=\"ds-row ds-row-on\"><span class=\"ds-row-b\" style=\"background:#ff6319;color:#141414\">BTC</span><span class=\"ds-row-n\">Bitcoin<small>Crypto</small></span><span class=\"ds-row-p\">67,420.00<small style=\"color:var(--sel-up,#00702f)\">+2.40%</small></span></button><button class=\"ds-row\"><span class=\"ds-row-b\" style=\"background:#2a5bd7;color:#fff;filter:saturate(.35);opacity:.8\">ETH</span><span class=\"ds-row-n\">Ethereum<small>Crypto</small></span><span class=\"ds-row-p\">3,512.00<small style=\"color:var(--down,#ff5c50)\">-1.20%</small></span></button>",
+      "css": ".ds-row { display: flex; align-items: center; gap: 12px; width: 260px; padding: 10px 16px; border: 0; border-bottom: 1px solid var(--rule, #2f2f2f); background: transparent; color: var(--ink, #f2f2f0); text-align: left; font-family: var(--font-sans), sans-serif; cursor: pointer; transition: background-color 150ms; } .ds-row:hover { background: var(--ground-3, #262626); } .ds-row:focus-visible { outline: 2px solid var(--focus, #fccc0a); outline-offset: 2px; } .ds-row-on, .ds-row-on:hover { background: var(--selected, #f2f2f0); color: var(--selected-ink, #141414); } .ds-row-b { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 9999px; font-size: 11px; font-weight: 800; } .ds-row-n { flex: 1; font-size: 14px; font-weight: 600; } .ds-row-n small, .ds-row-p small { display: block; font-size: 12px; font-weight: 400; opacity: 0.75; } .ds-row-p { text-align: right; font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums slashed-zero; font-size: 14px; } .ds-row-p small { opacity: 1; }"
+    },
+    {
+      "name": "Buy / Sell Submit",
+      "kind": "button",
+      "refersTo": "button-buy",
+      "description": "Order ticket submit; signal fill with white text, square, full width.",
+      "html": "<button class=\"ds-submit ds-buy\">Buy 0.05 BTC</button><button class=\"ds-submit ds-sell\">Sell 0.05 BTC</button>",
+      "css": ".ds-submit { display: block; width: 280px; height: 48px; margin-bottom: 8px; border: 0; border-radius: 0; color: #fff; font-family: var(--font-sans), sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; transition: filter 150ms, opacity 150ms; } .ds-buy { background: var(--up-fill, #007a33); } .ds-sell { background: var(--down-fill, #d42a20); } .ds-submit:hover { filter: brightness(1.1); } .ds-submit:focus-visible { outline: 2px solid var(--focus, #fccc0a); outline-offset: 2px; } .ds-submit:disabled { opacity: 0.4; cursor: not-allowed; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action: Close, Reset, presets.",
+      "html": "<button class=\"ds-outline\">Close</button>",
+      "css": ".ds-outline { height: 36px; padding: 0 12px; border: 1px solid var(--rule-strong, #4a4a4a); border-radius: 0; background: transparent; color: var(--ink-2, #b4b4b0); font-family: var(--font-sans), sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: color 150ms, border-color 150ms; } .ds-outline:hover { border-color: var(--ink, #f2f2f0); color: var(--ink, #f2f2f0); } .ds-outline:focus-visible { outline: 2px solid var(--focus, #fccc0a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "chip",
+      "refersTo": "segment-selected",
+      "description": "Square segments in a 1px outline; the selected segment inverts.",
+      "html": "<div class=\"ds-seg\"><button class=\"ds-seg-on\">All</button><button>Crypto</button><button>DeFi</button><button>Equity</button></div>",
+      "css": ".ds-seg { display: inline-grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--rule-strong, #4a4a4a); } .ds-seg button { height: 32px; padding: 0 14px; border: 0; background: transparent; color: var(--ink-2, #b4b4b0); font-family: var(--font-sans), sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: background-color 150ms, color 150ms; } .ds-seg button:hover { background: var(--ground-3, #262626); color: var(--ink, #f2f2f0); } .ds-seg button:focus-visible { outline: 2px solid var(--focus, #fccc0a); outline-offset: 2px; } .ds-seg .ds-seg-on, .ds-seg .ds-seg-on:hover { background: var(--selected, #f2f2f0); color: var(--selected-ink, #141414); }"
+    },
+    {
+      "name": "Amount Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Square figure input with a unit suffix; border turns ink on focus.",
+      "html": "<label class=\"ds-field\"><input placeholder=\"0.00\" inputmode=\"decimal\"><span>BTC</span></label>",
+      "css": ".ds-field { display: flex; align-items: center; width: 280px; height: 44px; border: 1px solid var(--rule-strong, #4a4a4a); background: var(--ground, #161616); } .ds-field:focus-within { border-color: var(--ink, #f2f2f0); } .ds-field input { flex: 1; height: 100%; padding: 0 12px; border: 0; outline: none; background: transparent; color: var(--ink, #f2f2f0); caret-color: var(--focus, #fccc0a); font-family: var(--font-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums slashed-zero; font-size: 15px; } .ds-field input::placeholder { color: var(--ink-3, #8a8a86); } .ds-field span { padding-right: 12px; color: var(--ink-3, #8a8a86); font-family: var(--font-sans), sans-serif; font-size: 12px; font-weight: 600; }"
+    },
+    {
+      "name": "Mobile Nav",
+      "kind": "nav",
+      "refersTo": "header-band",
+      "description": "Bottom band nav on phones; active item in band ink with a 3px top bar.",
+      "html": "<nav class=\"ds-nav\"><button>Markets</button><button class=\"ds-nav-on\">Chart</button><button>Trade</button><button>Portfolio</button></nav>",
+      "css": ".ds-nav { position: relative; display: flex; width: 360px; padding-top: 4px; background: var(--band, #000); } .ds-nav::before { content: ''; position: absolute; left: 0; right: 0; top: 4px; height: 1px; background: var(--band-rule, #f2f2f0); opacity: 0.9; } .ds-nav button { position: relative; flex: 1; height: 56px; border: 0; background: transparent; color: var(--band-ink-2, #a8a8a4); font-family: var(--font-sans), sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; } .ds-nav button:hover { color: var(--band-ink, #f2f2f0); } .ds-nav button:focus-visible { outline: 2px solid var(--focus, #fccc0a); outline-offset: -2px; } .ds-nav .ds-nav-on { color: var(--band-ink, #f2f2f0); } .ds-nav .ds-nav-on::after { content: ''; position: absolute; left: 24px; right: 24px; top: 5px; height: 3px; background: var(--band-ink, #f2f2f0); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Every Market Is a Route",
+    "overview": "LIQUID BOARD reads like a 1970 subway signage system laid over a trading desk. Black sign bands with a thin white rule name every work area; each asset rides under its own round route bullet; price is read as a position on a line. The ground is a near-black platform in dark mode (the default, for long sessions in dim rooms) and an off-white wall in light mode; the bands stay black in both.\n\nDensity is high and calm. Everything is set on square corners and 1px rules, with no shadow, no glow and no card chrome, so the colour that does appear carries meaning: route colours say which market, signal green and red say which direction, the selected inversion says where you are. The system refuses the exchange default of charcoal cards with one yellow accent and glow.\n\nThe world has one signature, the 24H ROUTE: the day's range drawn as a station line (24h low, Open, Your entry, 24h high) with the live price riding it as a round NOW train.",
+    "keyCharacteristics": [
+      "Black sign bands with a 1px white rule inset 4px from the top label every panel.",
+      "Round route bullets in per-asset colours; full strength only on the selected market.",
+      "Square corners and 1px rules everywhere; circles only for bullets, stations, trains and thumbs.",
+      "No shadows, no glow, no gradients.",
+      "Every figure is JetBrains Mono with tabular, slashed-zero numerals.",
+      "Selection is shown by inversion (ink ground, ground ink), not by an accent colour."
+    ],
+    "rules": [
+      { "name": "The Route Is Identity Rule", "body": "Route colours identify a market and nothing else. A route colour appears at full strength only on the selected market; every unselected bullet carries `filter: saturate(0.35)` at 0.8 opacity. The ticker strip is the one place all bullets show full strength, because it is a route map of every line at once.", "section": "colors" },
+      { "name": "The Signal Is Direction Rule", "body": "Green and red mean up and down (or buy and sell). They never decorate, label a category, or stand in for success and error chrome beyond the order outcome.", "section": "colors" },
+      { "name": "The Readable Signal Rule", "body": "Signal text uses the per-theme text values; solid fills use the fill values with white text; text on an inverted row uses `sel-up` / `sel-down`. Signal text on a sign band uses the dark text values in both themes, because the band is black in both.", "section": "colors" },
+      { "name": "The Tabular Figure Rule", "body": "Any number a trader reads goes in the figure face with tabular, slashed-zero numerals. No proportional digits anywhere a value can tick.", "section": "typography" },
+      { "name": "The Sign Caps Rule", "body": "Uppercase with 0.06-0.08em tracking is for sign band labels, band stat labels, column heads and button labels in bands. Body copy and field labels stay in sentence case.", "section": "typography" },
+      { "name": "The No-Lift Rule", "body": "Nothing casts a shadow or glows. If a layer needs to stand apart, it becomes a band or gets a rule.", "section": "elevation" },
+      { "name": "The Circle Means Transit Rule", "body": "A round form is a bullet, a station or a train. Containers are never rounded.", "section": "shapes" }
+    ],
+    "dos": [
+      "**Do** label every work area with a sign band: black, 1px white rule inset 4px from the top, uppercase 13px/700 label at 0.08em.",
+      "**Do** give every asset its route colour and route ink from `lib/mockData.ts`, at full strength only on the selected market and `saturate(0.35)` at 0.8 opacity elsewhere.",
+      "**Do** set every number in JetBrains Mono with tabular, slashed-zero numerals.",
+      "**Do** use `up` / `down` for signal text, `up-fill` / `down-fill` behind white text, and `sel-up` / `sel-down` on inverted rows.",
+      "**Do** mark selection by inversion and keyboard focus by the 2px focus-colour outline.",
+      "**Do** keep corners square and separate panels with 1px rules.",
+      "**Do** stop looping and flashing motion under reduced motion."
+    ],
+    "donts": [
+      "**Don't** use #00933c or #ee352e for text; they fail 4.5:1 at the sizes this terminal uses.",
+      "**Don't** set the dark band to #141414 on a #1c1c1c ground; the bands disappear.",
+      "**Don't** use a route colour to mean up, down, success or warning, or a signal colour to identify a market.",
+      "**Don't** add shadows, glows, gradients or rounded containers.",
+      "**Don't** use proportional digits for any live value.",
+      "**Don't** fall back to charcoal cards with a single yellow accent."
+    ]
+  }
+}
